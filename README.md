@@ -8,12 +8,10 @@
 
 
 
-A collection of utility functions for ethereum. It can be used in node.js or can be in the browser with browserify.
+A collection of utility functions for factom. It can be used in node.js or can be in the browser with browserify.
 
-# API
-[./docs/](./docs/index.md)
+# Inspired By
 
-Most of the sting manipulation methods are provided by [ethjs-util](https://github.com/ethjs/ethjs-util)
+This is based off of the etheruem js library, but for Factom
 
-# LICENSE
-MPL-2.0
+https://github.com/ethereumjs/ethereumjs-util
