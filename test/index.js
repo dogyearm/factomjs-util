@@ -19,7 +19,6 @@ describe('sha256', function () {
   })
 })
 
-
 describe('unpad', function () {
   it('should unpad a string', function () {
     var str = '0000000006600'
@@ -172,11 +171,10 @@ describe('publicToAddress', function () {
   })
 })
 
-
 describe('privateToPublic', function () {
   it('should produce a public key given a private key', function () {
     var pubKey = '2314857370cf482610507b11f1ca3aaec0040021ac74b2531be97d3a42a6ad62'
-    var privateKey = Buffer.from("2982d0278b8f12a86d3454205a4e92c22b37093e23f9f58e92e49ff0e3df5857", 'hex')
+    var privateKey = Buffer.from('2982d0278b8f12a86d3454205a4e92c22b37093e23f9f58e92e49ff0e3df5857', 'hex')
     var r = fctUtils.privateToPublic(privateKey).toString('hex')
     assert.equal(r.toString('hex'), pubKey)
   })
@@ -239,8 +237,8 @@ describe('baToJSON', function () {
   })
 })
 
-var echash = Buffer.from('82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28', 'hex')
-var ecprivkey = Buffer.from('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1', 'hex')
+// var echash = Buffer.from('82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28', 'hex')
+// var ecprivkey = Buffer.from('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1', 'hex')
 
 // describe('ecsign', function () {
 //   it('should produce a signature', function () {
@@ -250,7 +248,6 @@ var ecprivkey = Buffer.from('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e30
 //     assert.equal(sig.v, 27)
 //   })
 // })
-
 
 // describe('isValidSignature', function () {
 //   it('should fail on an invalid signature (shorter r))', function () {
@@ -280,7 +277,6 @@ var ecprivkey = Buffer.from('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e30
 //   })
 //   // FIXME: add homestead test
 // })
-
 
 describe('.isValidAddress()', function () {
   it('should return true', function () {

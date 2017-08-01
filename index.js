@@ -1,8 +1,8 @@
-const assert = require('assert')
+// const assert = require('assert')
 const BN = require('bn.js')
-const crypto = require('crypto');
+const crypto = require('crypto')
 const createHash = require('create-hash')
-const ed25519 = require('ed25519');
+const ed25519 = require('ed25519')
 const base58 = require('base-58')
 const Buffer = require('safe-buffer').Buffer
 Object.assign(exports, require('ethjs-util'))
@@ -11,26 +11,25 @@ Object.assign(exports, require('ethjs-util'))
  * the factoid public address prefix
  * @var {Buffer} "5fb1"
  */
-exports.FACTOID_PUBLIC_PREFIX = Buffer.from("5fb1", 'hex')
+exports.FACTOID_PUBLIC_PREFIX = Buffer.from('5fb1', 'hex')
 
 /**
  * the factoid private address prefix
  * @var {Buffer} "5fb1"
  */
-exports.FACTOID_PRIVATE_PREFIX = Buffer.from("6478", 'hex')
+exports.FACTOID_PRIVATE_PREFIX = Buffer.from('6478', 'hex')
 
 /**
  * the entrycredit public address prefix
  * @var {Buffer} "5fb1"
  */
-exports.ENTRYCREDIT_PUBLIC_PREFIX = Buffer.from("592a", 'hex')
+exports.ENTRYCREDIT_PUBLIC_PREFIX = Buffer.from('592a', 'hex')
 
 /**
  * the entrycredit private address prefix
  * @var {Buffer} "5fb1"
  */
-exports.ENTRYCREDIT_PRIVATE_PREFIX = Buffer.from("5db6", 'hex')
-
+exports.ENTRYCREDIT_PRIVATE_PREFIX = Buffer.from('5db6', 'hex')
 
 /**
  * the max integer that this VM can handle (a ```BN```)
@@ -208,31 +207,31 @@ exports.sha256d = function (a) {
  * @param {String} address The human readable address
  * @return {Boolean}
  */
-exports.isValidAddress = function(address) {
+exports.isValidAddress = function (address) {
   try {
     var add = base58.decode(address)
-    if(add.length != 38) {
+    if (add.length !== 38) {
       return false
     }
 
-    switch(address.substring(0, 2)) {
-      case "Fs":
-        break;
-      case "FA":
-        break;
-      case "Es":
-        break;
-      case "EC":
-        break;
+    switch (address.substring(0, 2)) {
+      case 'Fs':
+        break
+      case 'FA':
+        break
+      case 'Es':
+        break
+      case 'EC':
+        break
       default:
         return false
     }
 
     var checksum = exports.sha256d(exports.copyBuffer(add, 0, 34))
-    if(exports.bufferToHex(exports.copyBuffer(checksum, 0, 4)) == exports.bufferToHex(exports.copyBuffer(add, 34,38))) {
+    if (exports.bufferToHex(exports.copyBuffer(checksum, 0, 4)) === exports.bufferToHex(exports.copyBuffer(add, 34, 38))) {
       return true
     }
-  } catch(err) {
+  } catch (err) {
     console.log(err)
     return false
   }
@@ -246,7 +245,7 @@ exports.isValidAddress = function(address) {
  * @return {String} "Fa..."
  */
 exports.publicFactoidToAddress = function (key) {
-  return exports.keyToAddress(key, "FA")
+  return exports.keyToAddress(key, 'FA')
 }
 
 /**
@@ -255,7 +254,7 @@ exports.publicFactoidToAddress = function (key) {
  * @return {String} "Fa..."
  */
 exports.privateFactoidToAddress = function (key) {
-  return exports.keyToAddress(key, "Fs")
+  return exports.keyToAddress(key, 'Fs')
 }
 
 /**
@@ -264,7 +263,7 @@ exports.privateFactoidToAddress = function (key) {
  * @return {String} "Ec..."
  */
 exports.publicECToAddress = function (key) {
-  return exports.keyToAddress(key, "EC")
+  return exports.keyToAddress(key, 'EC')
 }
 
 /**
@@ -273,7 +272,7 @@ exports.publicECToAddress = function (key) {
  * @return {String} "Es..."
  */
 exports.privateECToAddress = function (key) {
-  return exports.keyToAddress(key, "Es")
+  return exports.keyToAddress(key, 'Es')
 }
 
 /**
@@ -283,30 +282,30 @@ exports.privateECToAddress = function (key) {
  * @return {String}
  */
 exports.keyToAddress = function (pubKey, prefix) {
-  if(pubKey.length != 32) {
+  if (pubKey.length !== 32) {
     throw new Error('pubkey must be 32 bytes')
-  } 
+  }
 
   pubKey = exports.toBuffer(pubKey)
   var address
-  switch(prefix) {
-    case "FA":
+  switch (prefix) {
+    case 'FA':
       address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, exports.keyToRCD(pubKey)])
-      break;
-    case "Fs":
+      break
+    case 'Fs':
       address = Buffer.concat([exports.FACTOID_PRIVATE_PREFIX, pubKey])
-      break;
-    case "EC":
+      break
+    case 'EC':
       address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, exports.keyToRCD(pubKey)])
-      break;
-    case "Es":
+      break
+    case 'Es':
       address = Buffer.concat([exports.ENTRYCREDIT_PRIVATE_PREFIX, pubKey])
-      break;
+      break
     default:
       address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, pubKey])
   }
   var checksum = exports.sha256d(address)
-  return base58.encode(Buffer.concat([address, checksum.slice(0,4)]))
+  return base58.encode(Buffer.concat([address, checksum.slice(0, 4)]))
 }
 
 /**
@@ -314,8 +313,8 @@ exports.keyToAddress = function (pubKey, prefix) {
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {Buffer} rcd
  */
-exports.keyToRCD = function(key) {
-  return exports.sha256d(Buffer.concat([Buffer.from("01", 'hex'), key]))
+exports.keyToRCD = function (key) {
+  return exports.sha256d(Buffer.concat([Buffer.from('01', 'hex'), key]))
 }
 
 /**
@@ -323,12 +322,11 @@ exports.keyToRCD = function(key) {
  * @param {Buffer} privateKey A private key must be 256 bits wide
  * @return {Buffer}
  */
-var privateToPublic = exports.privateToPublic = function (privateKey) {
+exports.privateToPublic = function (privateKey) {
   privateKey = exports.toBuffer(privateKey)
   var keypair = ed25519.MakeKeypair(privateKey)
   return keypair.publicKey
 }
-
 
 /**
  * ed25519 sign
@@ -340,8 +338,8 @@ exports.edsign = function (msg, privateKey) {
   return ed25519.Sign(msg, privateKey)
 }
 
-exports.privateAddressStringToPrivate = function(address) {
-  if(exports.isValidAddress(address) && address.substring(0,2) == "Fs"){
+exports.privateAddressStringToPrivate = function (address) {
+  if (exports.isValidAddress(address) && address.substring(0, 2) === 'Fs') {
     var fulladd = base58.decode(address)
     var key = exports.copyBuffer(fulladd, 2, 34)
     return key
@@ -351,10 +349,10 @@ exports.privateAddressStringToPrivate = function(address) {
 
 /**
  * Generates a new random private key.
- * @return {Buffer} 
+ * @return {Buffer}
  */
 exports.randomPrivateKey = function (from, nonce) {
-  return crypto.randomBytes(32);
+  return crypto.randomBytes(32)
 }
 
 /**
@@ -379,7 +377,7 @@ exports.addHexPrefix = function (str) {
  * @return {Boolean}
  */
 exports.isValidSignature = function (msg, sig, pubkey) {
-  return ed25519.Verify(msg, signature3, pubkey)
+  return ed25519.Verify(msg, sig, pubkey)
 }
 
 /**
@@ -396,110 +394,5 @@ exports.baToJSON = function (ba) {
       array.push(exports.baToJSON(ba[i]))
     }
     return array
-  }
-}
-
-/**
- * Defines properties on a `Object`. It make the assumption that underlying data is binary.
- * @param {Object} self the `Object` to define properties on
- * @param {Array} fields an array fields to define. Fields can contain:
- * * `name` - the name of the properties
- * * `length` - the number of bytes the field can have
- * * `allowLess` - if the field can be less than the length
- * * `allowEmpty`
- * @param {*} data data to be validated against the definitions
- */
-exports.defineProperties = function (self, fields, data) {
-  self.raw = []
-  self._fields = []
-
-  // attach the `toJSON`
-  self.toJSON = function (label) {
-    if (label) {
-      var obj = {}
-      self._fields.forEach(function (field) {
-        obj[field] = '0x' + self[field].toString('hex')
-      })
-      return obj
-    }
-    return exports.baToJSON(this.raw)
-  }
-
-  self.serialize = function serialize () {
-    return rlp.encode(self.raw)
-  }
-
-  fields.forEach(function (field, i) {
-    self._fields.push(field.name)
-    function getter () {
-      return self.raw[i]
-    }
-    function setter (v) {
-      v = exports.toBuffer(v)
-
-      if (v.toString('hex') === '00' && !field.allowZero) {
-        v = Buffer.allocUnsafe(0)
-      }
-
-      if (field.allowLess && field.length) {
-        v = exports.stripZeros(v)
-        assert(field.length >= v.length, 'The field ' + field.name + ' must not have more ' + field.length + ' bytes')
-      } else if (!(field.allowZero && v.length === 0) && field.length) {
-        assert(field.length === v.length, 'The field ' + field.name + ' must have byte length of ' + field.length)
-      }
-
-      self.raw[i] = v
-    }
-
-    Object.defineProperty(self, field.name, {
-      enumerable: true,
-      configurable: true,
-      get: getter,
-      set: setter
-    })
-
-    if (field.default) {
-      self[field.name] = field.default
-    }
-
-    // attach alias
-    if (field.alias) {
-      Object.defineProperty(self, field.alias, {
-        enumerable: false,
-        configurable: true,
-        set: setter,
-        get: getter
-      })
-    }
-  })
-
-  // if the constuctor is passed data
-  if (data) {
-    if (typeof data === 'string') {
-      data = Buffer.from(exports.stripHexPrefix(data), 'hex')
-    }
-
-    if (Buffer.isBuffer(data)) {
-      data = rlp.decode(data)
-    }
-
-    if (Array.isArray(data)) {
-      if (data.length > self._fields.length) {
-        throw (new Error('wrong number of fields in data'))
-      }
-
-      // make sure all the items are buffers
-      data.forEach(function (d, i) {
-        self[self._fields[i]] = exports.toBuffer(d)
-      })
-    } else if (typeof data === 'object') {
-      const keys = Object.keys(data)
-      fields.forEach(function (field) {
-        if (keys.indexOf(field.name) !== -1) self[field.name] = data[field.name]
-        if (keys.indexOf(field.alias) !== -1) self[field.alias] = data[field.alias]
-      })
-    } else {
-      throw new Error('invalid data')
-    }
   }
 }
