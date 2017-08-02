@@ -4,14 +4,16 @@
   "description": "a collection of utility functions for Factom",
   "main": "index.js",
   "scripts": {
+    "clean": "rm dist/factomjs-util.js",
     "coverage": "istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "lint": "standard",
+    "lint": "standard index.js",
     "prepublish": "npm run lint && npm run test",
     "test": "npm run test:node",
     "test:browser": "karma start karma.conf.js",
     "test:node": "istanbul test mocha -- --reporter spec",
-    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md && contributor"
+    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md && contributor",
+    "build:dist": "browserify index.js -o dist/factomjs-util.js --debug -t [ babelify --presets [ es2015 react ] ]"
   },
   "browserify": {
     "transform": [
@@ -52,15 +54,18 @@
   "homepage": "https://github.com/Emyrk/factomjs-util",
   "dependencies": {
     "base-58": "0.0.1",
+    "bindingify": "^1.0.1",
     "bn.js": "^4.8.0",
     "create-hash": "^1.1.2",
     "ed25519": "0.0.4",
     "is-hex-prefixed": "^1.0.0",
     "safe-buffer": "^5.1.1",
-    "strip-hex-prefix": "^1.0.0"
+    "strip-hex-prefix": "^1.0.0",
+    "supercop.js": "^2.0.1"
   },
   "devDependencies": {
-    "babel-preset-es2015": "^6.24.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
     "babelify": "^7.3.0",
     "browserify": "^14.0.0",
     "contributor": "^0.1.25",
@@ -75,7 +80,8 @@
     "karma-firefox-launcher": "^1.0.0",
     "karma-mocha": "^1.3.0",
     "mocha": "^3.1.2",
-    "standard": "*"
+    "standard": "*",
+    "uglifyify": "^4.0.3"
   },
   "standard": {
     "globals": [

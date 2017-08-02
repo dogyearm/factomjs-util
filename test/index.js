@@ -186,7 +186,7 @@ describe('privateKeyToPublicKey', function () {
     var pubKey = '2314857370cf482610507b11f1ca3aaec0040021ac74b2531be97d3a42a6ad62'
     var privateKey = Buffer.from('2982d0278b8f12a86d3454205a4e92c22b37093e23f9f58e92e49ff0e3df5857', 'hex')
     var r = fctUtils.privateKeyToPublicKey(privateKey).toString('hex')
-    assert.equal(r.toString('hex'), pubKey)
+    assert.equal(r, pubKey)
   })
   it('shouldn\'t produce a public key given an invalid private key', function () {
     var privateKey1 = Buffer.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95, 42])

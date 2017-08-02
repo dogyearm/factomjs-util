@@ -2,7 +2,7 @@
 const BN = require('bn.js')
 const crypto = require('crypto')
 const createHash = require('create-hash')
-const ed25519 = require('ed25519')
+const ed25519 = require('supercop.js')
 const base58 = require('base-58')
 const Buffer = require('safe-buffer').Buffer
 const isHexPrefixed = require('is-hex-prefixed')
@@ -171,8 +171,11 @@ function keyToRCD (key) {
  * @return {Buffer}
  */
 function privateKeyToPublicKey (privateKey) {
+  if (privateKey.length != 32) {
+    throw new Error('expect length 32')
+  }
   privateKey = toBuffer(privateKey)
-  var keypair = ed25519.MakeKeypair(privateKey)
+  var keypair = ed25519.createKeyPair(privateKey)
   return keypair.publicKey
 }
 
@@ -182,8 +185,8 @@ function privateKeyToPublicKey (privateKey) {
  * @param {Buffer} privateKey
  * @return {Buffer} signature
  */
-function edsign (msg, privateKey) {
-  return ed25519.Sign(msg, privateKey)
+function edsign (msg, publickey, privateKey) {
+  return ed25519.sign(msg, publickey, privateKey)
 }
 
 function privateHumanAddressStringToPrivate (address) {
@@ -212,7 +215,7 @@ function randomPrivateKey (from, nonce) {
  * @return {Boolean}
  */
 function isValidSignature (msg, sig, pubkey) {
-  return ed25519.Verify(msg, sig, pubkey)
+  return ed25519.Verify(sig, msg, pubkey)
 }
 
 /*
