@@ -1,6 +1,7 @@
 var assert = require('assert')
 var fctUtils = require('../index.js')
 var BN = require('bn.js')
+const Buffer = require('safe-buffer').Buffer
 
 describe('zeros function', function () {
   it('should produce lots of 0s', function () {
@@ -152,40 +153,49 @@ describe('publicToAddress', function () {
     var pubKey = 'a96946bcc602b0ebaa8e260cb4df0e05d7d2d3c14651cbbd902ab558610c9835'
     var address = 'FA2HmrxVecacS2tJEug1ZaGdJdfFGmU3qn3tFkMvPiroU46LBEte'
     pubKey = Buffer.from(pubKey, 'hex')
-    var r = fctUtils.publicFactoidToAddress(pubKey)
+    var r = fctUtils.publicFactoidKeyToHumanAddress(pubKey)
     assert.equal(r, address)
   })
   it('should produce an address given a SEC1 public key', function () {
     var pubKey = '60ff85751ed8b47c1c8f010e081f8094086b85c0b57445d7db2767af6828e9d0'
     var address = 'FA2q5QgwuVyVtaT2MbMpsw5LizuGvMa9Mf5qh38hxNmkC59wbi1A'
     pubKey = Buffer.from(pubKey, 'hex')
-    var r = fctUtils.publicFactoidToAddress(pubKey)
+    var r = fctUtils.publicFactoidKeyToHumanAddress(pubKey)
     assert.equal(r.toString('hex'), address)
   })
-  it('shouldn\'t produce an address given an invalid SEC1 public key', function () {
+  it('shouldn\'t produce an address given an invalid ed25519 public key', function () {
     var pubKey = ''
     pubKey = Buffer.from(pubKey, 'hex')
     assert.throws(function () {
-      fctUtils.publicToAddress(pubKey, true)
+      fctUtils.privateFactoidKeyToHumanAddress(pubKey)
     })
   })
 })
 
-describe('privateToPublic', function () {
+describe('privateHumanAddressStringToPrivate', function () {
+  it('should produce an private key given a private address', function () {
+    var privKey = '0x0000000000000000000000000000000000000000000000000000000000000000'
+    var address = 'Fs1KWJrpLdfucvmYwN2nWrwepLn8ercpMbzXshd1g8zyhKXLVLWj'
+    var r = fctUtils.privateHumanAddressStringToPrivate(address)
+    assert.equal(fctUtils.bufferToHex(r), privKey)
+  })
+})
+
+describe('privateKeyToPublicKey', function () {
   it('should produce a public key given a private key', function () {
     var pubKey = '2314857370cf482610507b11f1ca3aaec0040021ac74b2531be97d3a42a6ad62'
     var privateKey = Buffer.from('2982d0278b8f12a86d3454205a4e92c22b37093e23f9f58e92e49ff0e3df5857', 'hex')
-    var r = fctUtils.privateToPublic(privateKey).toString('hex')
+    var r = fctUtils.privateKeyToPublicKey(privateKey).toString('hex')
     assert.equal(r.toString('hex'), pubKey)
   })
   it('shouldn\'t produce a public key given an invalid private key', function () {
     var privateKey1 = Buffer.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95, 42])
     var privateKey2 = Buffer.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28])
     assert.throws(function () {
-      fctUtils.privateToPublic(privateKey1)
+      fctUtils.privateKeyToPublicKey(privateKey1)
     })
     assert.throws(function () {
-      fctUtils.privateToPublic(privateKey2)
+      fctUtils.privateKeyToPublicKey(privateKey2)
     })
   })
 })

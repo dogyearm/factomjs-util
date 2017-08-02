@@ -1,6 +1,6 @@
 module.exports = function (config) {
   config.set({
-    frameworks: ['browserify', 'detectBrowsers', 'mocha'],
+    frameworks: ['browserify', 'mocha'],
     files: [
       'test/*.js'
     ],
@@ -24,7 +24,7 @@ module.exports = function (config) {
       'TRAVIS'
     ],
     detectBrowsers: {
-      enabled: true,
+      enabled: false,
       usePhantomJS: false,
       postDetection: function (availableBrowser) {
         if (process.env.TRAVIS) {

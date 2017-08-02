@@ -5,7 +5,8 @@ const createHash = require('create-hash')
 const ed25519 = require('ed25519')
 const base58 = require('base-58')
 const Buffer = require('safe-buffer').Buffer
-Object.assign(exports, require('ethjs-util'))
+const isHexPrefixed = require('is-hex-prefixed')
+const stripHexPrefix = require('strip-hex-prefix')
 
 /**
  * the factoid public address prefix
@@ -50,164 +51,11 @@ exports.TWO_POW256 = new BN('100000000000000000000000000000000000000000000000000
 exports.BN = BN
 
 /**
- * Returns a buffer filled with 0s
- * @method zeros
- * @param {Number} bytes  the number of bytes the buffer should be
- * @return {Buffer}
- */
-exports.zeros = function (bytes) {
-  return Buffer.allocUnsafe(bytes).fill(0)
-}
-
-/**
- * Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
- * Or it truncates the beginning if it exceeds.
- * @method lsetLength
- * @param {Buffer|Array} msg the value to pad
- * @param {Number} length the number of bytes the output should be
- * @param {Boolean} [right=false] whether to start padding form the left or right
- * @return {Buffer|Array}
- */
-exports.setLengthLeft = exports.setLength = function (msg, length, right) {
-  var buf = exports.zeros(length)
-  msg = exports.toBuffer(msg)
-  if (right) {
-    if (msg.length < length) {
-      msg.copy(buf)
-      return buf
-    }
-    return msg.slice(0, length)
-  } else {
-    if (msg.length < length) {
-      msg.copy(buf, length - msg.length)
-      return buf
-    }
-    return msg.slice(-length)
-  }
-}
-
-/**
- * Right Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
- * Or it truncates the beginning if it exceeds.
- * @param {Buffer|Array} msg the value to pad
- * @param {Number} length the number of bytes the output should be
- * @return {Buffer|Array}
- */
-exports.setLengthRight = function (msg, length) {
-  return exports.setLength(msg, length, true)
-}
-
-/**
- * Trims leading zeros from a `Buffer` or an `Array`
- * @param {Buffer|Array|String} a
- * @return {Buffer|Array|String}
- */
-exports.unpad = exports.stripZeros = function (a) {
-  a = exports.stripHexPrefix(a)
-  var first = a[0]
-  while (a.length > 0 && first.toString() === '0') {
-    a = a.slice(1)
-    first = a[0]
-  }
-  return a
-}
-/**
- * Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` method.
- * @param {*} v the value
- */
-exports.toBuffer = function (v) {
-  if (!Buffer.isBuffer(v)) {
-    if (Array.isArray(v)) {
-      v = Buffer.from(v)
-    } else if (typeof v === 'string') {
-      if (exports.isHexString(v)) {
-        v = Buffer.from(exports.padToEven(exports.stripHexPrefix(v)), 'hex')
-      } else {
-        v = Buffer.from(v)
-      }
-    } else if (typeof v === 'number') {
-      v = exports.intToBuffer(v)
-    } else if (v === null || v === undefined) {
-      v = Buffer.allocUnsafe(0)
-    } else if (v.toArray) {
-      // converts a BN to a Buffer
-      v = Buffer.from(v.toArray())
-    } else {
-      throw new Error('invalid type')
-    }
-  }
-  return v
-}
-
-exports.copyBuffer = function (buf, from, to) {
-  var copy = Buffer.from(buf)
-  copy = copy.slice(from, to)
-  return copy
-}
-
-/**
- * Converts a `Buffer` to a `Number`
- * @param {Buffer} buf
- * @return {Number}
- * @throws If the input number exceeds 53 bits.
- */
-exports.bufferToInt = function (buf) {
-  return new BN(exports.toBuffer(buf)).toNumber()
-}
-
-/**
- * Converts a `Buffer` into a hex `String`
- * @param {Buffer} buf
- * @return {String}
- */
-exports.bufferToHex = function (buf) {
-  buf = exports.toBuffer(buf)
-  return '0x' + buf.toString('hex')
-}
-
-/**
- * Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
- * @param {Buffer} num
- * @return {BN}
- */
-exports.fromSigned = function (num) {
-  return new BN(num).fromTwos(256)
-}
-
-/**
- * Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
- * @param {BN} num
- * @return {Buffer}
- */
-exports.toUnsigned = function (num) {
-  return Buffer.from(num.toTwos(256).toArray())
-}
-
-/**
- * Creates SHA256 hash of the input
- * @param {Buffer|Array|String|Number} a the input data
- * @return {Buffer}
- */
-exports.sha256 = function (a) {
-  a = exports.toBuffer(a)
-  return createHash('sha256').update(a).digest()
-}
-
-/**
- * Creates SHA256D hash of the input
- * @param {Buffer|Array|String|Number} a the input data
- * @return {Buffer}
- */
-exports.sha256d = function (a) {
-  return exports.sha256(exports.sha256(a))
-}
-
-/**
  * Checks if the address satisfies the prefix and checksum
  * @param {String} address The human readable address
  * @return {Boolean}
  */
-exports.isValidAddress = function (address) {
+function isValidAddress (address) {
   try {
     var add = base58.decode(address)
     if (add.length !== 38) {
@@ -227,8 +75,8 @@ exports.isValidAddress = function (address) {
         return false
     }
 
-    var checksum = exports.sha256d(exports.copyBuffer(add, 0, 34))
-    if (exports.bufferToHex(exports.copyBuffer(checksum, 0, 4)) === exports.bufferToHex(exports.copyBuffer(add, 34, 38))) {
+    var checksum = sha256d(copyBuffer(add, 0, 34))
+    if (bufferToHex(copyBuffer(checksum, 0, 4)) === bufferToHex(copyBuffer(add, 34, 38))) {
       return true
     }
   } catch (err) {
@@ -244,8 +92,8 @@ exports.isValidAddress = function (address) {
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Fa..."
  */
-exports.publicFactoidToAddress = function (key) {
-  return exports.keyToAddress(key, 'FA')
+function publicFactoidKeyToHumanAddress (key) {
+  return keyToAddress(key, 'FA')
 }
 
 /**
@@ -253,8 +101,8 @@ exports.publicFactoidToAddress = function (key) {
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Fa..."
  */
-exports.privateFactoidToAddress = function (key) {
-  return exports.keyToAddress(key, 'Fs')
+function privateFactoidKeyToHumanAddress (key) {
+  return keyToAddress(key, 'Fs')
 }
 
 /**
@@ -262,8 +110,8 @@ exports.privateFactoidToAddress = function (key) {
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Ec..."
  */
-exports.publicECToAddress = function (key) {
-  return exports.keyToAddress(key, 'EC')
+function publicECKeyToHumanAddress (key) {
+  return keyToAddress(key, 'EC')
 }
 
 /**
@@ -271,8 +119,8 @@ exports.publicECToAddress = function (key) {
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Es..."
  */
-exports.privateECToAddress = function (key) {
-  return exports.keyToAddress(key, 'Es')
+function privateECKeyToHumanAddress (key) {
+  return keyToAddress(key, 'Es')
 }
 
 /**
@@ -281,22 +129,22 @@ exports.privateECToAddress = function (key) {
  * @param {String} prefix FA, Fs, EC, or Es
  * @return {String}
  */
-exports.keyToAddress = function (pubKey, prefix) {
+function keyToAddress (pubKey, prefix) {
   if (pubKey.length !== 32) {
     throw new Error('pubkey must be 32 bytes')
   }
 
-  pubKey = exports.toBuffer(pubKey)
+  pubKey = toBuffer(pubKey)
   var address
   switch (prefix) {
     case 'FA':
-      address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, exports.keyToRCD(pubKey)])
+      address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, keyToRCD(pubKey)])
       break
     case 'Fs':
       address = Buffer.concat([exports.FACTOID_PRIVATE_PREFIX, pubKey])
       break
     case 'EC':
-      address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, exports.keyToRCD(pubKey)])
+      address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, keyToRCD(pubKey)])
       break
     case 'Es':
       address = Buffer.concat([exports.ENTRYCREDIT_PRIVATE_PREFIX, pubKey])
@@ -304,7 +152,7 @@ exports.keyToAddress = function (pubKey, prefix) {
     default:
       address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, pubKey])
   }
-  var checksum = exports.sha256d(address)
+  var checksum = sha256d(address)
   return base58.encode(Buffer.concat([address, checksum.slice(0, 4)]))
 }
 
@@ -313,17 +161,17 @@ exports.keyToAddress = function (pubKey, prefix) {
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {Buffer} rcd
  */
-exports.keyToRCD = function (key) {
-  return exports.sha256d(Buffer.concat([Buffer.from('01', 'hex'), key]))
+function keyToRCD (key) {
+  return sha256d(Buffer.concat([Buffer.from('01', 'hex'), key]))
 }
 
 /**
- * Returns the ethereum public key of a given private key
+ * Returns the factom public key of a given private key
  * @param {Buffer} privateKey A private key must be 256 bits wide
  * @return {Buffer}
  */
-exports.privateToPublic = function (privateKey) {
-  privateKey = exports.toBuffer(privateKey)
+function privateKeyToPublicKey (privateKey) {
+  privateKey = toBuffer(privateKey)
   var keypair = ed25519.MakeKeypair(privateKey)
   return keypair.publicKey
 }
@@ -334,14 +182,14 @@ exports.privateToPublic = function (privateKey) {
  * @param {Buffer} privateKey
  * @return {Buffer} signature
  */
-exports.edsign = function (msg, privateKey) {
+function edsign (msg, privateKey) {
   return ed25519.Sign(msg, privateKey)
 }
 
-exports.privateAddressStringToPrivate = function (address) {
-  if (exports.isValidAddress(address) && address.substring(0, 2) === 'Fs') {
+function privateHumanAddressStringToPrivate (address) {
+  if (isValidAddress(address) && address.substring(0, 2) === 'Fs') {
     var fulladd = base58.decode(address)
-    var key = exports.copyBuffer(fulladd, 2, 34)
+    var key = copyBuffer(fulladd, 2, 34)
     return key
   }
   throw new Error('invalid address')
@@ -351,21 +199,8 @@ exports.privateAddressStringToPrivate = function (address) {
  * Generates a new random private key.
  * @return {Buffer}
  */
-exports.randomPrivateKey = function (from, nonce) {
+function randomPrivateKey (from, nonce) {
   return crypto.randomBytes(32)
-}
-
-/**
- * Adds "0x" to a given `String` if it does not already start with "0x"
- * @param {String} str
- * @return {String}
- */
-exports.addHexPrefix = function (str) {
-  if (typeof str !== 'string') {
-    return str
-  }
-
-  return exports.isHexPrefixed(str) ? str : '0x' + str
 }
 
 /**
@@ -376,8 +211,184 @@ exports.addHexPrefix = function (str) {
  * @param {Buffer} pubkey
  * @return {Boolean}
  */
-exports.isValidSignature = function (msg, sig, pubkey) {
+function isValidSignature (msg, sig, pubkey) {
   return ed25519.Verify(msg, sig, pubkey)
+}
+
+/*
+ *
+ *    Utility Functions
+ *
+ */
+
+/**
+ * Returns a buffer filled with 0s
+ * @method zeros
+ * @param {Number} bytes  the number of bytes the buffer should be
+ * @return {Buffer}
+ */
+function zeros (bytes) {
+  return Buffer.allocUnsafe(bytes).fill(0)
+}
+
+/**
+ * Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
+ * Or it truncates the beginning if it exceeds.
+ * @method lsetLength
+ * @param {Buffer|Array} msg the value to pad
+ * @param {Number} length the number of bytes the output should be
+ * @param {Boolean} [right=false] whether to start padding form the left or right
+ * @return {Buffer|Array}
+ */
+function setLengthLeft (msg, length, right) {
+  var buf = zeros(length)
+  msg = toBuffer(msg)
+  if (right) {
+    if (msg.length < length) {
+      msg.copy(buf)
+      return buf
+    }
+    return msg.slice(0, length)
+  } else {
+    if (msg.length < length) {
+      msg.copy(buf, length - msg.length)
+      return buf
+    }
+    return msg.slice(-length)
+  }
+}
+
+function setLength (msg, length, right) {
+  return setLengthLeft(msg, length, right)
+}
+
+/**
+ * Right Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
+ * Or it truncates the beginning if it exceeds.
+ * @param {Buffer|Array} msg the value to pad
+ * @param {Number} length the number of bytes the output should be
+ * @return {Buffer|Array}
+ */
+function setLengthRight (msg, length) {
+  return setLength(msg, length, true)
+}
+
+/**
+ * Trims leading zeros from a `Buffer` or an `Array`
+ * @param {Buffer|Array|String} a
+ * @return {Buffer|Array|String}
+ */
+function unpad (a) {
+  a = stripHexPrefix(a)
+  var first = a[0]
+  while (a.length > 0 && first.toString() === '0') {
+    a = a.slice(1)
+    first = a[0]
+  }
+  return a
+}
+/**
+ * Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` method.
+ * @param {*} v the value
+ */
+function toBuffer (v) {
+  if (!Buffer.isBuffer(v)) {
+    if (Array.isArray(v)) {
+      v = Buffer.from(v)
+    } else if (typeof v === 'string') {
+      if (isHexString(v)) {
+        v = Buffer.from(padToEven(stripHexPrefix(v)), 'hex')
+      } else {
+        v = Buffer.from(v)
+      }
+    } else if (typeof v === 'number') {
+      v = intToBuffer(v)
+    } else if (v === null || v === undefined) {
+      v = Buffer.allocUnsafe(0)
+    } else if (v.toArray) {
+      // converts a BN to a Buffer
+      v = Buffer.from(v.toArray())
+    } else {
+      throw new Error('invalid type')
+    }
+  }
+  return v
+}
+
+function copyBuffer (buf, from, to) {
+  var copy = Buffer.from(buf)
+  copy = copy.slice(from, to)
+  return copy
+}
+
+/**
+ * Converts a `Buffer` to a `Number`
+ * @param {Buffer} buf
+ * @return {Number}
+ * @throws If the input number exceeds 53 bits.
+ */
+function bufferToInt (buf) {
+  return new BN(toBuffer(buf)).toNumber()
+}
+
+/**
+ * Converts a `Buffer` into a hex `String`
+ * @param {Buffer} buf
+ * @return {String}
+ */
+function bufferToHex (buf) {
+  buf = toBuffer(buf)
+  return '0x' + buf.toString('hex')
+}
+
+/**
+ * Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
+ * @param {Buffer} num
+ * @return {BN}
+ */
+function fromSigned (num) {
+  return new BN(num).fromTwos(256)
+}
+
+/**
+ * Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
+ * @param {BN} num
+ * @return {Buffer}
+ */
+function toUnsigned (num) {
+  return Buffer.from(num.toTwos(256).toArray())
+}
+
+/**
+ * Creates SHA256 hash of the input
+ * @param {Buffer|Array|String|Number} a the input data
+ * @return {Buffer}
+ */
+function sha256 (a) {
+  a = toBuffer(a)
+  return createHash('sha256').update(a).digest()
+}
+
+/**
+ * Creates SHA256D hash of the input
+ * @param {Buffer|Array|String|Number} a the input data
+ * @return {Buffer}
+ */
+function sha256d (a) {
+  return sha256(sha256(a))
+}
+
+/**
+ * Adds "0x" to a given `String` if it does not already start with "0x"
+ * @param {String} str
+ * @return {String}
+ */
+function addHexPrefix (str) {
+  if (typeof str !== 'string') {
+    return str
+  }
+
+  return isHexPrefixed(str) ? str : '0x' + str
 }
 
 /**
@@ -385,14 +396,106 @@ exports.isValidSignature = function (msg, sig, pubkey) {
  * @param {Buffer|Array} ba
  * @return {Array|String|null}
  */
-exports.baToJSON = function (ba) {
+function baToJSON (ba) {
   if (Buffer.isBuffer(ba)) {
     return '0x' + ba.toString('hex')
   } else if (ba instanceof Array) {
     var array = []
     for (var i = 0; i < ba.length; i++) {
-      array.push(exports.baToJSON(ba[i]))
+      array.push(baToJSON(ba[i]))
     }
     return array
   }
+}
+
+/**
+ * Pads a `String` to have an even length
+ * @param {String} value
+ * @return {String} output
+ */
+function padToEven (value) {
+  var a = value; // eslint-disable-line
+
+  if (typeof a !== 'string') {
+    throw new Error(`[ethjs-util] while padding to even, value must be string, is currently ${typeof a}, while padToEven.`)
+  }
+
+  if (a.length % 2) {
+    a = `0${a}`
+  }
+
+  return a
+}
+
+/**
+ * Is the string a hex string.
+ *
+ * @method check if string is hex string of specific length
+ * @param {String} value
+ * @param {Number} length
+ * @returns {Boolean} output the string is a hex string
+ */
+function isHexString (value, length) {
+  if (typeof (value) !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) {
+    return false
+  }
+
+  if (length && value.length !== 2 + 2 * length) { return false }
+
+  return true
+}
+
+/**
+ * Converts an `Number` to a `Buffer`
+ * @param {Number} i
+ * @return {Buffer}
+ */
+function intToBuffer (i) {
+  const hex = intToHex(i)
+
+  return new Buffer(hex.slice(2), 'hex')
+}
+
+/**
+ * Converts a `Number` into a hex `String`
+ * @param {Number} i
+ * @return {String}
+ */
+function intToHex (i) {
+  var hex = i.toString(16); // eslint-disable-line
+
+  return `0x${padToEven(hex)}`
+}
+
+module.exports = {
+  baToJSON,
+  isValidSignature,
+  randomPrivateKey,
+  keyToRCD,
+  privateKeyToPublicKey,
+  edsign,
+  keyToAddress,
+  privateFactoidKeyToHumanAddress,
+  publicECKeyToHumanAddress,
+  privateECKeyToHumanAddress,
+  publicFactoidKeyToHumanAddress,
+  privateHumanAddressStringToPrivate,
+  sha256,
+  sha256d,
+  isValidAddress,
+  zeros,
+  setLengthLeft,
+  setLengthRight,
+  unpad,
+  toBuffer,
+  copyBuffer,
+  bufferToInt,
+  bufferToHex,
+  setLength,
+  fromSigned,
+  toUnsigned,
+  intToBuffer,
+  intToHex,
+  addHexPrefix
+
 }
