@@ -171,7 +171,7 @@ function keyToRCD (key) {
  * @return {Buffer}
  */
 function privateKeyToPublicKey (privateKey) {
-  if (privateKey.length != 32) {
+  if (privateKey.length !== 32) {
     throw new Error('expect length 32')
   }
   privateKey = toBuffer(privateKey)
