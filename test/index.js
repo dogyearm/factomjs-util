@@ -247,17 +247,28 @@ describe('baToJSON', function () {
   })
 })
 
-// var echash = Buffer.from('82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28', 'hex')
-// var ecprivkey = Buffer.from('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1', 'hex')
+var echash = Buffer.from('82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28', 'hex')
+var ecprivkey = Buffer.from('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1', 'hex')
+var ecpub = Buffer.from('ddedac414b250c9a5594633c993146ca81c710c8db0d04400f92acd0f56a0a3c', 'hex')
+describe('edsign', function () {
+  it('should produce a signature', function () {
+    var sig = fctUtils.edsign(echash, ecprivkey)
+    assert.deepEqual(sig, Buffer.from('8b4b009023e0d9ae4a1613f370849d7af14b68da9e9c301c3da36d6c69ceb2766cb43a042f54f614b75f4e48d8c862e57dbfd3c92e89db613e6e24b9ef374704', 'hex'))
+    assert.equal(fctUtils.isValidSignature(echash, sig, ecpub), true)
+  })
+})
 
-// describe('ecsign', function () {
-//   it('should produce a signature', function () {
-//     var sig = fctUtils.ecsign(echash, ecprivkey)
-//     assert.deepEqual(sig.r, Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex'))
-//     assert.deepEqual(sig.s, Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex'))
-//     assert.equal(sig.v, 27)
-//   })
-// })
+describe('edsign', function () {
+  it('should produce a valid signature', function () {
+    for(var i = 0; i < 10; i++){
+      var sec = fctUtils.randomPrivateKey()
+      var pub = fctUtils.privateKeyToPublicKey(sec)
+      var msg = fctUtils.randomPrivateKey()
+      var sig = fctUtils.edsign(msg, sec)
+      assert.equal(fctUtils.isValidSignature(msg, sig, pub), true)
+    }
+  })
+})
 
 // describe('isValidSignature', function () {
 //   it('should fail on an invalid signature (shorter r))', function () {

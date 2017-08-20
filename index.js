@@ -51,7 +51,8 @@ exports.TWO_POW256 = new BN('100000000000000000000000000000000000000000000000000
 exports.BN = BN
 
 /**
- * Checks if the address satisfies the prefix and checksum
+ * Checks if the address satisfies the prefix and checksum conditions and returns true
+ * if so.
  * @param {String} address The human readable address
  * @return {Boolean}
  */
@@ -80,7 +81,6 @@ function isValidAddress (address) {
       return true
     }
   } catch (err) {
-    console.log(err)
     return false
   }
 
@@ -88,7 +88,7 @@ function isValidAddress (address) {
 }
 
 /**
- * Returns the factom human readable address for a factoid public.
+ * Returns the factom human readable address for a factoid public key.
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Fa..."
  */
@@ -97,7 +97,7 @@ function publicFactoidKeyToHumanAddress (key) {
 }
 
 /**
- * Returns the factom human readable address for a factoid secret.
+ * Returns the factom human readable address for a factoid secret key.
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Fa..."
  */
@@ -106,7 +106,7 @@ function privateFactoidKeyToHumanAddress (key) {
 }
 
 /**
- * Returns the factom human readable address for a entry credit public.
+ * Returns the factom human readable address for a entry credit public key.
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Ec..."
  */
@@ -115,7 +115,7 @@ function publicECKeyToHumanAddress (key) {
 }
 
 /**
- * Returns the factom human readable address for a entry credit secret.
+ * Returns the factom human readable address for a entry credit secret key.
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Es..."
  */
@@ -138,13 +138,13 @@ function keyToAddress (pubKey, prefix) {
   var address
   switch (prefix) {
     case 'FA':
-      address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, keyToRCD(pubKey)])
+      address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, keyToRCD1(pubKey)])
       break
     case 'Fs':
       address = Buffer.concat([exports.FACTOID_PRIVATE_PREFIX, pubKey])
       break
     case 'EC':
-      address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, keyToRCD(pubKey)])
+      address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, keyToRCD1(pubKey)])
       break
     case 'Es':
       address = Buffer.concat([exports.ENTRYCREDIT_PRIVATE_PREFIX, pubKey])
@@ -161,7 +161,7 @@ function keyToAddress (pubKey, prefix) {
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {Buffer} rcd
  */
-function keyToRCD (key) {
+function keyToRCD1 (key) {
   return sha256d(Buffer.concat([Buffer.from('01', 'hex'), key]))
 }
 
@@ -183,10 +183,25 @@ function privateKeyToPublicKey (privateKey) {
  * ed25519 sign
  * @param {Buffer} msg
  * @param {Buffer} privateKey
+ * @param {Buffer} publicKey Optional give public key to reduce some computation
  * @return {Buffer} signature
  */
-function edsign (msg, publickey, privateKey) {
-  return ed25519.sign(msg, publickey, privateKey)
+function edsign (msg, privateKey) {
+  var keypair = ed25519.createKeyPair(privateKey)
+  var sig = ed25519.sign(msg, keypair.publicKey, keypair.secretKey)
+  return sig
+}
+
+/**
+ * Validate 25519 signature
+ * @method isValidSignature
+ * @param {Buffer} msg
+ * @param {Buffer} sig
+ * @param {Buffer} pubkey
+ * @return {Boolean}
+ */
+function isValidSignature (msg, sig, pubkey) {
+  return ed25519.verify(sig, msg, pubkey)
 }
 
 function privateHumanAddressStringToPrivate (address) {
@@ -204,18 +219,6 @@ function privateHumanAddressStringToPrivate (address) {
  */
 function randomPrivateKey (from, nonce) {
   return crypto.randomBytes(32)
-}
-
-/**
- * Validate 25519 signature
- * @method isValidSignature
- * @param {Buffer} msg
- * @param {Buffer} sig
- * @param {Buffer} pubkey
- * @return {Boolean}
- */
-function isValidSignature (msg, sig, pubkey) {
-  return ed25519.Verify(sig, msg, pubkey)
 }
 
 /*
@@ -474,7 +477,7 @@ module.exports = {
   baToJSON,
   isValidSignature,
   randomPrivateKey,
-  keyToRCD,
+  keyToRCD1,
   privateKeyToPublicKey,
   edsign,
   keyToAddress,
