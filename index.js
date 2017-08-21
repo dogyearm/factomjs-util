@@ -8,6 +8,8 @@ const Buffer = require('safe-buffer').Buffer
 const isHexPrefixed = require('is-hex-prefixed')
 const stripHexPrefix = require('strip-hex-prefix')
 
+const MAX_UINT32 = 0xFFFFFFF
+
 /**
  * the factoid public address prefix
  * @var {Buffer} "5fb1"
@@ -97,6 +99,15 @@ function publicFactoidKeyToHumanAddress (key) {
 }
 
 /**
+ * Returns the factom human readable address for a factoid rcd hash.
+ * @param {Buffer} key The 32 byte buffer of the rcd hash
+ * @return {String} "Fa..."
+ */
+function publicFactoidRCDHashToHumanAddress (rcdHash) {
+  return keyToAddress(rcdHash, 'FA', true)
+}
+
+/**
  * Returns the factom human readable address for a factoid secret key.
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Fa..."
@@ -115,6 +126,15 @@ function publicECKeyToHumanAddress (key) {
 }
 
 /**
+ * Returns the factom human readable address for a entry credit rcd hash.
+ * @param {Buffer} key The 32 byte buffer of the rcd hash
+ * @return {String} "Fa..."
+ */
+function publicECRCDHashToHumanAddress (rcdHash) {
+  return keyToAddress(rcdHash, 'EC', true)
+}
+
+/**
  * Returns the factom human readable address for a entry credit secret key.
  * @param {Buffer} key The 32 byte buffer of the key
  * @return {String} "Es..."
@@ -127,24 +147,37 @@ function privateECKeyToHumanAddress (key) {
  * Returns the factom human readable address for a key.
  * @param {Buffer} key The 32 byte buffer of the key
  * @param {String} prefix FA, Fs, EC, or Es
+* @param {String} isRCD If passing an RCD hash, indicate it here
  * @return {String}
  */
-function keyToAddress (pubKey, prefix) {
+function keyToAddress (pubKey, prefix, isRCD) {
   if (pubKey.length !== 32) {
     throw new Error('pubkey must be 32 bytes')
+  }
+
+  if (isRCD === undefined) {
+    isRCD = false
   }
 
   pubKey = toBuffer(pubKey)
   var address
   switch (prefix) {
     case 'FA':
-      address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, keyToRCD1(pubKey)])
+      if (isRCD) {
+        address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, pubKey])
+      } else {
+        address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, keyToRCD1(pubKey)])
+      }
       break
     case 'Fs':
       address = Buffer.concat([exports.FACTOID_PRIVATE_PREFIX, pubKey])
       break
     case 'EC':
-      address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, keyToRCD1(pubKey)])
+      if (isRCD) {
+        address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, pubKey])
+      } else {
+        address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, keyToRCD1(pubKey)])
+      }
       break
     case 'Es':
       address = Buffer.concat([exports.ENTRYCREDIT_PRIVATE_PREFIX, pubKey])
@@ -186,7 +219,7 @@ function privateKeyToPublicKey (privateKey) {
  * @param {Buffer} publicKey Optional give public key to reduce some computation
  * @return {Buffer} signature
  */
-function edsign (msg, privateKey) {
+function edSign (msg, privateKey) {
   var keypair = ed25519.createKeyPair(privateKey)
   var sig = ed25519.sign(msg, keypair.publicKey, keypair.secretKey)
   return sig
@@ -205,7 +238,16 @@ function isValidSignature (msg, sig, pubkey) {
 }
 
 function privateHumanAddressStringToPrivate (address) {
-  if (isValidAddress(address) && address.substring(0, 2) === 'Fs') {
+  if (isValidAddress(address) && (address.substring(0, 2) === 'Fs' || address.substring(0, 2) === 'Es')) {
+    var fulladd = base58.decode(address)
+    var key = copyBuffer(fulladd, 2, 34)
+    return key
+  }
+  throw new Error('invalid address')
+}
+
+function publicHumanAddressStringToRCD (address) {
+  if (isValidAddress(address) && (address.substring(0, 2) === 'FA' || address.substring(0, 2) === 'EC')) {
     var fulladd = base58.decode(address)
     var key = copyBuffer(fulladd, 2, 34)
     return key
@@ -452,6 +494,21 @@ function isHexString (value, length) {
 }
 
 /**
+ * Converts an`Number` to a 8 byte `Buffer`
+ * @param {Number} i
+ * @return {Buffer}
+ */
+function int64ToBuffer (i) {
+  var b = new Buffer(8)
+  const big = ~~(i / MAX_UINT32)
+  const low = (i % MAX_UINT32) - big
+
+  b.writeUInt32BE(big, 0)
+  b.writeUInt32BE(low, 4)
+  return b
+}
+
+/**
  * Converts an `Number` to a `Buffer`
  * @param {Number} i
  * @return {Buffer}
@@ -473,19 +530,230 @@ function intToHex (i) {
   return `0x${padToEven(hex)}`
 }
 
+/*
+ * Marshaling Transactions
+ */
+
+/**
+ * Constructor for a new Transaction object. This is used to build factoid/ec transactions
+ * It will use the Address struct for inputs/outputs
+ */
+function Transaction () {
+  this.Inputs = []
+  this.Outputs = []
+  this.ECOutputs = []
+  this.RCDs = []
+  this.Signatures = []
+  this.MillitimeStamp = (new Date()).getTime()
+}
+
+/**
+ * Will create an address object.
+ * @param {buffer/String} faAddress The 32 byte RCD hash or the human readable address
+ * @param {int} amount Factoshi amount, no negitive numbers
+ * @param {bool} isFactoid Setting this to false indicates an EC address
+ */
+function Address (faAddress, amount, isFactoid) {
+  if (isFactoid === undefined) {
+    isFactoid = true
+  }
+  this.IsFactoid = isFactoid
+  if (faAddress.length === 32) {
+    this.RCDHash = faAddress
+    if (isFactoid) {
+      this.HumanReadable = publicFactoidRCDHashToHumanAddress(faAddress)
+    } else {
+      this.HumanReadable = publicECRCDHashToHumanAddress(faAddress)
+    }
+  } else {
+    if (typeof faAddress !== 'string') {
+      throw new Error('HumanReadable param must be a string')
+    }
+    if (!isValidAddress(faAddress)) {
+      throw new Error('HumanReadable param must be valid')
+    }
+    this.HumanReadable = faAddress
+    this.RCDHash = publicHumanAddressStringToRCD(faAddress)
+  }
+  this.Amount = amount
+}
+
+Address.prototype.updateAmount = function (amount) {
+  this.Amount = amount
+}
+
+Address.prototype.isFactoid = function () {
+  return this.IsFactoid
+}
+
+Address.prototype.MarshalBinary = function () {
+  return Buffer.concat([intToBuffer(this.Amount), this.RCDHash])
+}
+
+/**
+ * Will add an address as an input. The private key is not needed until the signing
+ * @param {Address} address The address object as an input. It also contains the amount
+ * @param {int} amount Optional argument to change the amount
+ */
+Transaction.prototype.addInput = function (address, amount) {
+  address = checkAddress(address)
+
+  if (amount !== undefined) {
+    address.updateAmount(amount)
+  }
+  this.Inputs.push(address)
+}
+
+function checkAddress (address) {
+  if (typeof address !== Address) {
+    address = new Address(address, 0)
+  }
+  return address
+}
+
+/**
+ * Will update the timestamp to the time given. If no time given, will update to now.
+ * @param {Date} time The new time to be set, or none for "now"
+ */
+Transaction.prototype.updateTime = function (time) {
+  if (time !== undefined) {
+    this.MillitimeStamp = time
+    return
+  }
+  this.MillitimeStamp = (new Date()).getTime()
+}
+
+/**
+ * Will add an address as an output. If it is an ECAddress, it will be set as an ECOutput
+ * @param {Address} address The address object as an input. It also contains the amount and type
+ * @param {int} amount Optional argument to change the amount
+ */
+Transaction.prototype.addOutput = function (address, amount) {
+  address = checkAddress(address)
+
+  if (amount !== undefined) {
+    address.updateAmount(amount)
+  }
+  if (address.isFactoid()) {
+    this.Outputs.push(address)
+  } else {
+    this.ECOutputs.push(address)
+  }
+}
+
+/**
+ * Will add the RCDHash to the transaction. RCDs corrospond to the inputs.
+ * @param {Buffer} rcdHash The RCD hash
+ */
+// Transaction.prototype.addRCD = function (rcdHash) {
+//   this.RCDs.push(rcdHash)
+// }
+
+/**
+ * Will return the Marshaled form of the transaction
+ * @return {Buffer}
+ */
+Transaction.prototype.MarshalBinary = function () {
+  var buf = this.MarshalBinarySig()
+  for (var i = 0; i < this.RCDs.length; i++) {
+    buf = Buffer.concat([buf, Buffer.concat([this.RCDs[i], this.Signatures[i].MarshalBinary()])])
+  }
+  return buf
+}
+
+/**
+ * Will return the Marshaled form of the transaction for signing
+ * @return {Buffer}
+ */
+Transaction.prototype.MarshalBinarySig = function () {
+  var buf = new Buffer(1)
+  // Verion
+  buf.writeUInt8(2, 0)
+  var ts = intToBuffer(this.MillitimeStamp)
+  buf = Buffer.concat([buf, ts])
+
+  var amts = new Buffer(3)
+  amts.writeUInt8(this.Inputs.length, 0)
+  amts.writeUInt8(this.Outputs.length, 1)
+  amts.writeUInt8(this.ECOutputs.length, 2)
+
+  buf = Buffer.concat([buf, amts])
+
+  for (var i = 0; i < this.Inputs.length; i++) {
+    var data = this.Inputs[i].MarshalBinary()
+    buf = Buffer.concat([buf, data])
+  }
+
+  for (var i = 0; i < this.Outputs.length; i++) {
+    var data = this.Outputs[i].MarshalBinary()
+    buf = Buffer.concat([buf, data])
+  }
+
+  for (var i = 0; i < this.ECOutputs.length; i++) {
+    var data = this.ECOutputs[i].MarshalBinary()
+    buf = Buffer.concat([buf, data])
+  }
+
+  // Timestamp
+  return buf
+}
+
+/**
+ * Will sign the transaction and add the
+ * @param {Buffer/String} secretKey Key to sign as 32 byte buffer or 'Fs...'
+ */
+Transaction.prototype.sign = function (secretKey) {
+  if (secretKey.length !== 32) {
+    if (isValidAddress(secretKey)) {
+      secretKey = privateHumanAddressStringToPrivate(secretKey)
+    } else {
+      throw new Error('secretKey must be 32 byte buffer or valid human readable address')
+    }
+  }
+  var data = this.MarshalBinarySig()
+  var sig = new Signature(data, secretKey)
+  this.Signatures.push(sig)
+  this.RCDs.push(Buffer.concat([Buffer.from('01', 'hex'), privateKeyToPublicKey(secretKey)]))
+}
+
+function Signature (msg, secretKey) {
+  this.PublicKey = privateKeyToPublicKey(secretKey)
+  this.Sig = edSign(msg, secretKey)
+}
+
+/**
+ * Will return the Marshaled form of the Signature
+ * @return {Buffer}
+ */
+Signature.prototype.MarshalBinary = function () {
+  return this.Sig
+}
+
+function ToInteger (x) {
+  x = Number(x)
+  return x < 0 ? Math.ceil(x) : Math.floor(x)
+}
+function ToUint32 (x) {
+  return modulo(ToInteger(x), Math.pow(2, 32))
+}
+function modulo (a, b) {
+  return a - Math.floor(a / b) * b
+}
+
 module.exports = {
   baToJSON,
   isValidSignature,
   randomPrivateKey,
   keyToRCD1,
   privateKeyToPublicKey,
-  edsign,
+  edSign,
   keyToAddress,
   privateFactoidKeyToHumanAddress,
   publicECKeyToHumanAddress,
   privateECKeyToHumanAddress,
   publicFactoidKeyToHumanAddress,
   privateHumanAddressStringToPrivate,
+  publicHumanAddressStringToRCD,
   sha256,
   sha256d,
   isValidAddress,
@@ -502,6 +770,9 @@ module.exports = {
   toUnsigned,
   intToBuffer,
   intToHex,
-  addHexPrefix
+  addHexPrefix,
+  publicFactoidRCDHashToHumanAddress,
+  publicECRCDHashToHumanAddress,
+  Transaction
 
 }
