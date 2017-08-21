@@ -274,18 +274,20 @@ describe('transaction', function () {
   it('Marshaling of signature should be correct', function () {
     var t = new fctUtils.Transaction()
 
-// Fs1SRRmtf2tGDJWgCbN72GfdNkKAoW1GjpmSbmkUFkYqrUxbztrn
-// FA2bEwF9UB2WCYhqPXxKknHyxoju4g6Uwoa7jw3cHCfQuPNz75yo
-// 521c0cd8593ad315fcd13e34f7a647af85d9db5c939b396fe844e4440aeddf14
-    t.addOutput('FA2bEwF9UB2WCYhqPXxKknHyxoju4g6Uwoa7jw3cHCfQuPNz75yo', 10)
-
+// Input
 // Fs2aMCyRrHnaBHbf1Y51LJ7vaUkQrLdRJ7krdbrVs7W9DbCHJWxW
 // FA2THnSmkrf7veBZ21u5bkT3xqKM3DBd8nQwByyNK3J4XEk16Byb
 // 400e5c7e0947fc014ba28c80243a12db6601f1173b270eb7f8bbbde62c290e74
 // Pub: 4411954adf73e01e53027225418c88751c483efa80279bde513430ff7ad44d3c
 // Priv: a5662cb144210e35c2315fe3cd80afe7bc6f23da1eb4ae1830b350182f606a41
-    console.log(fctUtils.bufferToHex(fctUtils.privateHumanAddressStringToPrivate('Fs2aMCyRrHnaBHbf1Y51LJ7vaUkQrLdRJ7krdbrVs7W9DbCHJWxW')))
+
+// Output
+// Fs1SRRmtf2tGDJWgCbN72GfdNkKAoW1GjpmSbmkUFkYqrUxbztrn
+// FA2bEwF9UB2WCYhqPXxKknHyxoju4g6Uwoa7jw3cHCfQuPNz75yo
+// 521c0cd8593ad315fcd13e34f7a647af85d9db5c939b396fe844e4440aeddf14
+
     t.addInput('FA2THnSmkrf7veBZ21u5bkT3xqKM3DBd8nQwByyNK3J4XEk16Byb', 10)
+    t.addOutput('FA2bEwF9UB2WCYhqPXxKknHyxoju4g6Uwoa7jw3cHCfQuPNz75yo', 10)
     t.updateTime(1503275254039)
     t.sign('Fs2aMCyRrHnaBHbf1Y51LJ7vaUkQrLdRJ7krdbrVs7W9DbCHJWxW')
     assert.equal(fctUtils.bufferToHex(t.MarshalBinary()), '0x02015e023001170101000a400e5c7e0947fc014ba28c80243a12db6601f1173b270eb7f8bbbde62c290e740a521c0cd8593ad315fcd13e34f7a647af85d9db5c939b396fe844e4440aeddf14014411954adf73e01e53027225418c88751c483efa80279bde513430ff7ad44d3c9c74c3a5f2012f806a11811759894ec3024b9d2e707e514592e8a9a7bb860a6a9a3739f039755920c5645eb7daf953303b83b9466a655ae53d1476813c3d9b08')
