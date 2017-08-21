@@ -567,15 +567,27 @@ function Address (faAddress, amount, isFactoid) {
     }
   } else {
     if (typeof faAddress !== 'string') {
+      console.log(faAddress)
       throw new Error('HumanReadable param must be a string')
     }
     if (!isValidAddress(faAddress)) {
       throw new Error('HumanReadable param must be valid')
     }
+
+    if (faAddress.substring(0, 2) === 'FA') {
+      this.IsFactoid = true
+    } else {
+      this.IsFactoid = false
+    }
+
     this.HumanReadable = faAddress
     this.RCDHash = publicHumanAddressStringToRCD(faAddress)
   }
-  this.Amount = amount
+  if (amount === undefined) {
+    this.Amount = 0
+  } else {
+    this.Amount = amount
+  }
 }
 
 Address.prototype.updateAmount = function (amount) {
@@ -596,17 +608,18 @@ Address.prototype.MarshalBinary = function () {
  * @param {int} amount Optional argument to change the amount
  */
 Transaction.prototype.addInput = function (address, amount) {
-  address = checkAddress(address)
+  var add = checkAddress(address)
 
   if (amount !== undefined) {
-    address.updateAmount(amount)
+    add.updateAmount(amount)
   }
-  this.Inputs.push(address)
+  this.Inputs.push(add)
 }
 
 function checkAddress (address) {
-  if (typeof address !== Address) {
-    address = new Address(address, 0)
+  if (!(address instanceof Address)) {
+    var add = new Address(address, 0)
+    return add
   }
   return address
 }
@@ -679,18 +692,19 @@ Transaction.prototype.MarshalBinarySig = function () {
 
   buf = Buffer.concat([buf, amts])
 
-  for (var i = 0; i < this.Inputs.length; i++) {
+  var i = 0
+  for (i = 0; i < this.Inputs.length; i++) {
     var data = this.Inputs[i].MarshalBinary()
     buf = Buffer.concat([buf, data])
   }
 
-  for (var i = 0; i < this.Outputs.length; i++) {
-    var data = this.Outputs[i].MarshalBinary()
+  for (i = 0; i < this.Outputs.length; i++) {
+    data = this.Outputs[i].MarshalBinary()
     buf = Buffer.concat([buf, data])
   }
 
-  for (var i = 0; i < this.ECOutputs.length; i++) {
-    var data = this.ECOutputs[i].MarshalBinary()
+  for (i = 0; i < this.ECOutputs.length; i++) {
+    data = this.ECOutputs[i].MarshalBinary()
     buf = Buffer.concat([buf, data])
   }
 
@@ -729,17 +743,6 @@ Signature.prototype.MarshalBinary = function () {
   return this.Sig
 }
 
-function ToInteger (x) {
-  x = Number(x)
-  return x < 0 ? Math.ceil(x) : Math.floor(x)
-}
-function ToUint32 (x) {
-  return modulo(ToInteger(x), Math.pow(2, 32))
-}
-function modulo (a, b) {
-  return a - Math.floor(a / b) * b
-}
-
 module.exports = {
   baToJSON,
   isValidSignature,
@@ -773,6 +776,9 @@ module.exports = {
   addHexPrefix,
   publicFactoidRCDHashToHumanAddress,
   publicECRCDHashToHumanAddress,
-  Transaction
-
+  int64ToBuffer,
+  Transaction,
+  Address,
+  Signature,
+  checkAddress
 }

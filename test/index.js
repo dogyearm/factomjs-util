@@ -294,6 +294,17 @@ describe('transaction', function () {
   })
 })
 
+describe('address', function () {
+  it('CheckAddress', function () {
+    var a = new fctUtils.Address('FA2bEwF9UB2WCYhqPXxKknHyxoju4g6Uwoa7jw3cHCfQuPNz75yo')
+    assert.equal(a.isFactoid(), true)
+    assert.equal(a.Amount, 0)
+    var str = 'FA2bEwF9UB2WCYhqPXxKknHyxoju4g6Uwoa7jw3cHCfQuPNz75yo'
+    var add = fctUtils.checkAddress(str)
+    assert.equal(add instanceof fctUtils.Address, true)
+  })
+})
+
 // describe('isValidSignature', function () {
 //   it('should fail on an invalid signature (shorter r))', function () {
 //     var r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab', 'hex')
