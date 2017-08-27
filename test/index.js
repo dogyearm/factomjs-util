@@ -271,7 +271,7 @@ describe('edsign', function () {
 })
 
 describe('transaction', function () {
-  it('Marshaling of signature should be correct', function () {
+  it('Marshaling of signature should be correct. Also checks fee', function () {
     var t = new fctUtils.Transaction()
 
 // Input
@@ -291,6 +291,23 @@ describe('transaction', function () {
     t.updateTime(1503275254039)
     t.sign('Fs2aMCyRrHnaBHbf1Y51LJ7vaUkQrLdRJ7krdbrVs7W9DbCHJWxW')
     assert.equal(fctUtils.bufferToHex(t.MarshalBinary()), '0x02015e023001170101000a400e5c7e0947fc014ba28c80243a12db6601f1173b270eb7f8bbbde62c290e740a521c0cd8593ad315fcd13e34f7a647af85d9db5c939b396fe844e4440aeddf14014411954adf73e01e53027225418c88751c483efa80279bde513430ff7ad44d3c9c74c3a5f2012f806a11811759894ec3024b9d2e707e514592e8a9a7bb860a6a9a3739f039755920c5645eb7daf953303b83b9466a655ae53d1476813c3d9b08')
+    assert.equal(t.calculateFee(1000), 12000)
+
+    var resp = t.addFee("FA2THnSmkrf7veBZ21u5bkT3xqKM3DBd8nQwByyNK3J4XEk16Byb", 1000)
+    assert.equal(resp, true)
+    assert.equal(t.Inputs[0].Amount, 12010)
+    t.Inputs[0].Amount = 10
+
+    // Not enough to cover
+    resp = t.subFee("FA2bEwF9UB2WCYhqPXxKknHyxoju4g6Uwoa7jw3cHCfQuPNz75yo", 1000)
+    assert.equal(resp, false)
+    assert.equal(t.Outputs[0].Amount, 10)
+
+
+    t.Outputs[0].Amount = 20000
+    resp = t.subFee("FA2bEwF9UB2WCYhqPXxKknHyxoju4g6Uwoa7jw3cHCfQuPNz75yo", 1000)
+    assert.equal(resp, true)
+    assert.equal(t.Outputs[0].Amount, 8000)
   })
 })
 

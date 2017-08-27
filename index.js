@@ -547,6 +547,7 @@ function Transaction () {
   this.MillitimeStamp = (new Date()).getTime()
 }
 
+
 /**
  * Will create an address object.
  * @param {buffer/String} faAddress The 32 byte RCD hash or the human readable address
@@ -616,6 +617,95 @@ Transaction.prototype.addInput = function (address, amount) {
   this.Inputs.push(add)
 }
 
+// Fee structure can be found:
+// https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#sighash-type
+//
+//Transaction data size. -- Factoid transactions are charged the same
+//    amount as Entry Credits (EC). The size fees are 1 EC per KiB with a
+//    maximum transaction size of 10 KiB.
+//Number of outputs created -- These are data points which potentially
+//    need to be tracked far into the future. They are more expensive
+//    to handle, and require a larger sacrifice. Outputs cost 10 EC per
+//    output. A purchase of Entry Credits also requires the 10 EC sized
+//    fee to be valid.
+//Number of signatures checked -- These cause expensive computation on
+//    all full nodes. A fee of 10 EC equivalent must be paid for each
+//    signature included.
+
+/**
+ * Will return the fee in number of ECs of the transaction
+ * @return {int} fee In Entry Credits
+ */
+Transaction.prototype.calculateECFee = function () {
+  // Currently only works for RCD_1
+  var data = this.MarshalBinarySig()
+  // Size is the size of the data up to the signatute + number of inputs times the (RCD_1 size + Siganture size)
+  var totalInputs = this.Inputs.length
+  var size = data.length + (totalInputs * (33+64))
+  var kib = Math.floor((size+1023)/1024)
+
+  // fee in EC
+  var fee = (kib * 1) + ((this.Outputs.length + this.ECOutputs) * 10) + totalInputs
+  return fee
+}
+
+/**
+ * Adds the fee to the input specified
+ * @param {String} address Address of input to add fee too 'FA....'
+ * @return {bool} true if added, false if not found
+ */
+Transaction.prototype.addFee = function (address, ecrate) {
+  var fee = this.calculateFee(ecrate)
+  for(var i = 0; i < this.Inputs.length; i++) {
+    if(this.Inputs[i].HumanReadable === address) {
+      this.Inputs[i].Amount = this.Inputs[i].Amount + fee
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Subtracts the fee from the output
+ * @param {String} address Address of output to deduct fee from 'FA....' or 'EC.....'
+ * @return {bool} true if added, false if not found or not enough output to cover fee
+ */
+Transaction.prototype.subFee = function (address, ecrate) {
+  var fee = this.calculateFee(ecrate)
+  for(var i = 0; i < this.Outputs.length; i++) {
+    if(this.Outputs[i].HumanReadable === address) {
+      if(this.Outputs[i].Amount < fee) {
+        // Not enough to cover fee
+        return false
+      }
+
+      this.Outputs[i].Amount = this.Outputs[i].Amount - fee
+      return true
+    }
+  }
+  for(var i = 0; i < this.ECOutputs.length; i++) {
+    if(this.ECOutputs[i].HumanReadable === address) {
+      if(this.ECOutputs[i].Amount < fee) {
+        // Not enough to cover fee
+        return false
+      }
+      this.ECOutputs[i].Amount = this.ECOutputs[i].Amount - fee
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Will return the fee in number of ECs of the transaction
+ * @param {int} ecrate The current Entry credit rate
+ * @return {int} fee In factoshis
+ */
+Transaction.prototype.calculateFee = function (ecrate) {
+  return this.calculateECFee() * ecrate
+}
+
+
 function checkAddress (address) {
   if (!(address instanceof Address)) {
     var add = new Address(address, 0)
@@ -637,7 +727,7 @@ Transaction.prototype.updateTime = function (time) {
 }
 
 /**
- * Will add an address as an output. If it is an ECAddress, it will be set as an ECOutput
+ * Will add an address as an output. If it is an ECAddress, it will be set as an ECOutput with the amount in factoshis
  * @param {Address} address The address object as an input. It also contains the amount and type
  * @param {int} amount Optional argument to change the amount
  */
