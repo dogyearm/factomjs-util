@@ -547,7 +547,6 @@ function Transaction () {
   this.MillitimeStamp = (new Date()).getTime()
 }
 
-
 /**
  * Will create an address object.
  * @param {buffer/String} faAddress The 32 byte RCD hash or the human readable address
@@ -620,15 +619,15 @@ Transaction.prototype.addInput = function (address, amount) {
 // Fee structure can be found:
 // https://github.com/FactomProject/FactomDocs/blob/master/factomDataStructureDetails.md#sighash-type
 //
-//Transaction data size. -- Factoid transactions are charged the same
+// Transaction data size. -- Factoid transactions are charged the same
 //    amount as Entry Credits (EC). The size fees are 1 EC per KiB with a
 //    maximum transaction size of 10 KiB.
-//Number of outputs created -- These are data points which potentially
+// Number of outputs created -- These are data points which potentially
 //    need to be tracked far into the future. They are more expensive
 //    to handle, and require a larger sacrifice. Outputs cost 10 EC per
 //    output. A purchase of Entry Credits also requires the 10 EC sized
 //    fee to be valid.
-//Number of signatures checked -- These cause expensive computation on
+// Number of signatures checked -- These cause expensive computation on
 //    all full nodes. A fee of 10 EC equivalent must be paid for each
 //    signature included.
 
@@ -641,8 +640,8 @@ Transaction.prototype.calculateECFee = function () {
   var data = this.MarshalBinarySig()
   // Size is the size of the data up to the signatute + number of inputs times the (RCD_1 size + Siganture size)
   var totalInputs = this.Inputs.length
-  var size = data.length + (totalInputs * (33+64))
-  var kib = Math.floor((size+1023)/1024)
+  var size = data.length + (totalInputs * (33 + 64))
+  var kib = Math.floor((size + 1023) / 1024)
 
   // fee in EC
   var fee = (kib * 1) + ((this.Outputs.length + this.ECOutputs) * 10) + totalInputs
@@ -656,8 +655,8 @@ Transaction.prototype.calculateECFee = function () {
  */
 Transaction.prototype.addFee = function (address, ecrate) {
   var fee = this.calculateFee(ecrate)
-  for(var i = 0; i < this.Inputs.length; i++) {
-    if(this.Inputs[i].HumanReadable === address) {
+  for (var i = 0; i < this.Inputs.length; i++) {
+    if (this.Inputs[i].HumanReadable === address) {
       this.Inputs[i].Amount = this.Inputs[i].Amount + fee
       return true
     }
@@ -672,9 +671,9 @@ Transaction.prototype.addFee = function (address, ecrate) {
  */
 Transaction.prototype.subFee = function (address, ecrate) {
   var fee = this.calculateFee(ecrate)
-  for(var i = 0; i < this.Outputs.length; i++) {
-    if(this.Outputs[i].HumanReadable === address) {
-      if(this.Outputs[i].Amount < fee) {
+  for (var i = 0; i < this.Outputs.length; i++) {
+    if (this.Outputs[i].HumanReadable === address) {
+      if (this.Outputs[i].Amount < fee) {
         // Not enough to cover fee
         return false
       }
@@ -683,9 +682,9 @@ Transaction.prototype.subFee = function (address, ecrate) {
       return true
     }
   }
-  for(var i = 0; i < this.ECOutputs.length; i++) {
-    if(this.ECOutputs[i].HumanReadable === address) {
-      if(this.ECOutputs[i].Amount < fee) {
+  for (i = 0; i < this.ECOutputs.length; i++) {
+    if (this.ECOutputs[i].HumanReadable === address) {
+      if (this.ECOutputs[i].Amount < fee) {
         // Not enough to cover fee
         return false
       }
@@ -704,7 +703,6 @@ Transaction.prototype.subFee = function (address, ecrate) {
 Transaction.prototype.calculateFee = function (ecrate) {
   return this.calculateECFee() * ecrate
 }
-
 
 function checkAddress (address) {
   if (!(address instanceof Address)) {

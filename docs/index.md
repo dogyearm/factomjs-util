@@ -1,6 +1,127 @@
+# Transaction
+
+[index.js:541-548](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L541-L548 "Source code on GitHub")
+
+Constructor for a new Transaction object. This is used to build factoid/ec transactions
+It will use the Address struct for inputs/outputs
+
+## addFee
+
+[index.js:656-665](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L656-L665 "Source code on GitHub")
+
+Adds the fee to the input specified
+
+**Parameters**
+
+-   `address` **String** Address of input to add fee too 'FA....'
+-   `ecrate`  
+
+Returns **bool** true if added, false if not found
+
+## addInput
+
+[index.js:610-617](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L610-L617 "Source code on GitHub")
+
+Will add an address as an input. The private key is not needed until the signing
+
+**Parameters**
+
+-   `address` **Address** The address object as an input. It also contains the amount
+-   `amount` **int** Optional argument to change the amount
+
+## addOutput
+
+[index.js:732-743](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L732-L743 "Source code on GitHub")
+
+Will add an address as an output. If it is an ECAddress, it will be set as an ECOutput with the amount in factoshis
+
+**Parameters**
+
+-   `address` **Address** The address object as an input. It also contains the amount and type
+-   `amount` **int** Optional argument to change the amount
+
+## calculateECFee
+
+[index.js:638-649](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L638-L649 "Source code on GitHub")
+
+Will return the fee in number of ECs of the transaction
+
+Returns **int** fee In Entry Credits
+
+## calculateFee
+
+[index.js:703-705](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L703-L705 "Source code on GitHub")
+
+Will return the fee in number of ECs of the transaction
+
+**Parameters**
+
+-   `ecrate` **int** The current Entry credit rate
+
+Returns **int** fee In factoshis
+
+## MarshalBinary
+
+[index.js:757-763](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L757-L763 "Source code on GitHub")
+
+Will return the Marshaled form of the transaction
+
+Returns **Buffer** 
+
+## MarshalBinary
+
+[index.js:757-763](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L757-L763 "Source code on GitHub")
+
+Will add the RCDHash to the transaction. RCDs corrospond to the inputs.
+
+**Parameters**
+
+-   `rcdHash` **Buffer** The RCD hash
+
+## MarshalBinarySig
+
+[index.js:769-801](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L769-L801 "Source code on GitHub")
+
+Will return the Marshaled form of the transaction for signing
+
+Returns **Buffer** 
+
+## sign
+
+[index.js:807-819](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L807-L819 "Source code on GitHub")
+
+Will sign the transaction and add the
+
+**Parameters**
+
+-   `secretKey` **Buffer/String** Key to sign as 32 byte buffer or 'Fs...'
+
+## subFee
+
+[index.js:672-696](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L672-L696 "Source code on GitHub")
+
+Subtracts the fee from the output
+
+**Parameters**
+
+-   `address` **String** Address of output to deduct fee from 'FA....' or 'EC.....'
+-   `ecrate`  
+
+Returns **bool** true if added, false if not found or not enough output to cover fee
+
+## updateTime
+
+[index.js:719-725](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L719-L725 "Source code on GitHub")
+
+Will update the timestamp to the time given. If no time given, will update to now.
+
+**Parameters**
+
+-   `time` **Date** The new time to be set, or none for "now"
+
 # addHexPrefix
 
-[index.js:386-392](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L386-L392 "Source code on GitHub")
+[index.js:434-440](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L434-L440 "Source code on GitHub")
 
 Adds "0x" to a given `String` if it does not already start with "0x"
 
@@ -10,9 +131,21 @@ Adds "0x" to a given `String` if it does not already start with "0x"
 
 Returns **String** 
 
+# Address
+
+[index.js:556-591](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L556-L591 "Source code on GitHub")
+
+Will create an address object.
+
+**Parameters**
+
+-   `faAddress` **buffer/String** The 32 byte RCD hash or the human readable address
+-   `amount` **int** Factoshi amount, no negitive numbers
+-   `isFactoid` **bool** Setting this to false indicates an EC address
+
 # baToJSON
 
-[index.js:399-409](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L399-L409 "Source code on GitHub")
+[index.js:447-457](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L447-L457 "Source code on GitHub")
 
 Converts a `Buffer` or `Array` to JSON
 
@@ -24,49 +157,49 @@ Returns **Array or String or **
 
 # BN
 
-[index.js:51-51](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L51-L51 "Source code on GitHub")
+[index.js:53-53](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L53-L53 "Source code on GitHub")
 
 [`BN`](https://github.com/indutny/bn.js)
 
 # ENTRYCREDIT_PRIVATE_PREFIX
 
-[index.js:33-33](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L33-L33 "Source code on GitHub")
+[index.js:35-35](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L35-L35 "Source code on GitHub")
 
 the entrycredit private address prefix
 
 # ENTRYCREDIT_PUBLIC_PREFIX
 
-[index.js:27-27](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L27-L27 "Source code on GitHub")
+[index.js:29-29](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L29-L29 "Source code on GitHub")
 
 the entrycredit public address prefix
 
 # FACTOID_PRIVATE_PREFIX
 
-[index.js:21-21](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L21-L21 "Source code on GitHub")
+[index.js:23-23](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L23-L23 "Source code on GitHub")
 
 the factoid private address prefix
 
 # FACTOID_PUBLIC_PREFIX
 
-[index.js:15-15](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L15-L15 "Source code on GitHub")
+[index.js:17-17](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L17-L17 "Source code on GitHub")
 
 the factoid public address prefix
 
 # MAX_INTEGER
 
-[index.js:39-39](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L39-L39 "Source code on GitHub")
+[index.js:41-41](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L41-L41 "Source code on GitHub")
 
 the max integer that this VM can handle (a `BN`)
 
 # TWO_POW256
 
-[index.js:45-45](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L45-L45 "Source code on GitHub")
+[index.js:47-47](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L47-L47 "Source code on GitHub")
 
 2^256 (a `BN`)
 
 # bufferToHex
 
-[index.js:339-342](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L339-L342 "Source code on GitHub")
+[index.js:387-390](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L387-L390 "Source code on GitHub")
 
 Converts a `Buffer` into a hex `String`
 
@@ -78,7 +211,7 @@ Returns **String**
 
 # bufferToInt
 
-[index.js:330-332](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L330-L332 "Source code on GitHub")
+[index.js:378-380](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L378-L380 "Source code on GitHub")
 
 Converts a `Buffer` to a `Number`
 
@@ -88,9 +221,9 @@ Converts a `Buffer` to a `Number`
 
 Returns **Number** 
 
-# edsign
+# edSign
 
-[index.js:185-187](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L185-L187 "Source code on GitHub")
+[index.js:222-226](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L222-L226 "Source code on GitHub")
 
 ed25519 sign
 
@@ -98,12 +231,13 @@ ed25519 sign
 
 -   `msg` **Buffer** 
 -   `privateKey` **Buffer** 
+-   `publicKey` **Buffer** Optional give public key to reduce some computation
 
 Returns **Buffer** signature
 
 # fromSigned
 
-[index.js:349-351](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L349-L351 "Source code on GitHub")
+[index.js:397-399](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L397-L399 "Source code on GitHub")
 
 Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
 
@@ -113,9 +247,21 @@ Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit nu
 
 Returns **BN** 
 
+# int64ToBuffer
+
+[index.js:501-509](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L501-L509 "Source code on GitHub")
+
+Converts an`Number` to a 8 byte `Buffer`
+
+**Parameters**
+
+-   `i` **Number** 
+
+Returns **Buffer** 
+
 # intToBuffer
 
-[index.js:453-457](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L453-L457 "Source code on GitHub")
+[index.js:516-520](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L516-L520 "Source code on GitHub")
 
 Converts an `Number` to a `Buffer`
 
@@ -127,7 +273,7 @@ Returns **Buffer**
 
 # intToHex
 
-[index.js:464-468](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L464-L468 "Source code on GitHub")
+[index.js:527-531](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L527-L531 "Source code on GitHub")
 
 Converts a `Number` into a hex `String`
 
@@ -139,7 +285,7 @@ Returns **String**
 
 # isHexString
 
-[index.js:438-446](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L438-L446 "Source code on GitHub")
+[index.js:486-494](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L486-L494 "Source code on GitHub")
 
 Is the string a hex string.
 
@@ -152,9 +298,10 @@ Returns **Boolean** output the string is a hex string
 
 # isValidAddress
 
-[index.js:58-88](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L58-L88 "Source code on GitHub")
+[index.js:61-90](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L61-L90 "Source code on GitHub")
 
-Checks if the address satisfies the prefix and checksum
+Checks if the address satisfies the prefix and checksum conditions and returns true
+if so.
 
 **Parameters**
 
@@ -164,7 +311,7 @@ Returns **Boolean**
 
 # isValidSignature
 
-[index.js:214-216](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L214-L216 "Source code on GitHub")
+[index.js:236-238](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L236-L238 "Source code on GitHub")
 
 Validate 25519 signature
 
@@ -178,7 +325,7 @@ Returns **Boolean**
 
 # keyToAddress
 
-[index.js:132-157](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L132-L157 "Source code on GitHub")
+[index.js:153-190](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L153-L190 "Source code on GitHub")
 
 Returns the factom human readable address for a key.
 
@@ -187,12 +334,13 @@ Returns the factom human readable address for a key.
 -   `key` **Buffer** The 32 byte buffer of the key
 -   `pubKey`  
 -   `prefix` **String** FA, Fs, EC, or Es
+-   `isRCD` **String** If passing an RCD hash, indicate it here
 
 Returns **String** 
 
-# keyToRCD
+# keyToRCD1
 
-[index.js:164-166](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L164-L166 "Source code on GitHub")
+[index.js:197-199](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L197-L199 "Source code on GitHub")
 
 Returns the rcd for a given public key. Type 1
 
@@ -202,9 +350,17 @@ Returns the rcd for a given public key. Type 1
 
 Returns **Buffer** rcd
 
+# MarshalBinary
+
+[index.js:830-832](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L830-L832 "Source code on GitHub")
+
+Will return the Marshaled form of the Signature
+
+Returns **Buffer** 
+
 # padToEven
 
-[index.js:416-428](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L416-L428 "Source code on GitHub")
+[index.js:464-476](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L464-L476 "Source code on GitHub")
 
 Pads a `String` to have an even length
 
@@ -216,9 +372,9 @@ Returns **String** output
 
 # privateECKeyToHumanAddress
 
-[index.js:122-124](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L122-L124 "Source code on GitHub")
+[index.js:142-144](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L142-L144 "Source code on GitHub")
 
-Returns the factom human readable address for a entry credit secret.
+Returns the factom human readable address for a entry credit secret key.
 
 **Parameters**
 
@@ -228,9 +384,9 @@ Returns **String** "Es..."
 
 # privateFactoidKeyToHumanAddress
 
-[index.js:104-106](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L104-L106 "Source code on GitHub")
+[index.js:115-117](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L115-L117 "Source code on GitHub")
 
-Returns the factom human readable address for a factoid secret.
+Returns the factom human readable address for a factoid secret key.
 
 **Parameters**
 
@@ -240,7 +396,7 @@ Returns **String** "Fa..."
 
 # privateKeyToPublicKey
 
-[index.js:173-177](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L173-L177 "Source code on GitHub")
+[index.js:206-213](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L206-L213 "Source code on GitHub")
 
 Returns the factom public key of a given private key
 
@@ -252,9 +408,9 @@ Returns **Buffer**
 
 # publicECKeyToHumanAddress
 
-[index.js:113-115](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L113-L115 "Source code on GitHub")
+[index.js:124-126](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L124-L126 "Source code on GitHub")
 
-Returns the factom human readable address for a entry credit public.
+Returns the factom human readable address for a entry credit public key.
 
 **Parameters**
 
@@ -262,11 +418,24 @@ Returns the factom human readable address for a entry credit public.
 
 Returns **String** "Ec..."
 
+# publicECRCDHashToHumanAddress
+
+[index.js:133-135](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L133-L135 "Source code on GitHub")
+
+Returns the factom human readable address for a entry credit rcd hash.
+
+**Parameters**
+
+-   `key` **Buffer** The 32 byte buffer of the rcd hash
+-   `rcdHash`  
+
+Returns **String** "Fa..."
+
 # publicFactoidKeyToHumanAddress
 
-[index.js:95-97](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L95-L97 "Source code on GitHub")
+[index.js:97-99](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L97-L99 "Source code on GitHub")
 
-Returns the factom human readable address for a factoid public.
+Returns the factom human readable address for a factoid public key.
 
 **Parameters**
 
@@ -274,9 +443,22 @@ Returns the factom human readable address for a factoid public.
 
 Returns **String** "Fa..."
 
+# publicFactoidRCDHashToHumanAddress
+
+[index.js:106-108](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L106-L108 "Source code on GitHub")
+
+Returns the factom human readable address for a factoid rcd hash.
+
+**Parameters**
+
+-   `key` **Buffer** The 32 byte buffer of the rcd hash
+-   `rcdHash`  
+
+Returns **String** "Fa..."
+
 # randomPrivateKey
 
-[index.js:202-204](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L202-L204 "Source code on GitHub")
+[index.js:262-264](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L262-L264 "Source code on GitHub")
 
 Generates a new random private key.
 
@@ -289,7 +471,7 @@ Returns **Buffer**
 
 # setLengthLeft
 
-[index.js:243-259](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L243-L259 "Source code on GitHub")
+[index.js:291-307](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L291-L307 "Source code on GitHub")
 
 Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
 Or it truncates the beginning if it exceeds.
@@ -304,7 +486,7 @@ Returns **Buffer or Array**
 
 # setLengthRight
 
-[index.js:272-274](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L272-L274 "Source code on GitHub")
+[index.js:320-322](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L320-L322 "Source code on GitHub")
 
 Right Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
 Or it truncates the beginning if it exceeds.
@@ -318,7 +500,7 @@ Returns **Buffer or Array**
 
 # sha256
 
-[index.js:367-370](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L367-L370 "Source code on GitHub")
+[index.js:415-418](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L415-L418 "Source code on GitHub")
 
 Creates SHA256 hash of the input
 
@@ -330,7 +512,7 @@ Returns **Buffer**
 
 # sha256d
 
-[index.js:377-379](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L377-L379 "Source code on GitHub")
+[index.js:425-427](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L425-L427 "Source code on GitHub")
 
 Creates SHA256D hash of the input
 
@@ -342,7 +524,7 @@ Returns **Buffer**
 
 # toBuffer
 
-[index.js:294-316](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L294-L316 "Source code on GitHub")
+[index.js:342-364](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L342-L364 "Source code on GitHub")
 
 Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` method.
 
@@ -352,7 +534,7 @@ Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String
 
 # toUnsigned
 
-[index.js:358-360](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L358-L360 "Source code on GitHub")
+[index.js:406-408](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L406-L408 "Source code on GitHub")
 
 Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
 
@@ -364,7 +546,7 @@ Returns **Buffer**
 
 # unpad
 
-[index.js:281-289](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L281-L289 "Source code on GitHub")
+[index.js:329-337](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L329-L337 "Source code on GitHub")
 
 Trims leading zeros from a `Buffer` or an `Array`
 
@@ -376,7 +558,7 @@ Returns **Buffer or Array or String**
 
 # zeros
 
-[index.js:230-232](https://github.com/Emyrk/factomjs-util/blob/5ac56eca50e6a397240af189acf90ef423ac081e/index.js#L230-L232 "Source code on GitHub")
+[index.js:278-280](https://github.com/MyFactomWallet/factomjs-util/blob/9e01015ac1d6b83d0b25b50c625fc03c1e6d7723/index.js#L278-L280 "Source code on GitHub")
 
 Returns a buffer filled with 0s
 

@@ -1,6 +1,6 @@
 {
   "name": "factomjs-util",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "a collection of utility functions for Factom",
   "main": "index.js",
   "scripts": {
@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Emyrk/factomjs-util.git"
+    "url": "https://github.com/MyFactomWallet/factomjs-util.git"
   },
   "keywords": [
     "factom",
@@ -49,9 +49,9 @@
   ],
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/Emyrk/factomjs-util/issues"
+    "url": "https://github.com/MyFactomWallet/factomjs-util/issues"
   },
-  "homepage": "https://github.com/Emyrk/factomjs-util",
+  "homepage": "https://github.com/MyFactomWallet/factomjs-util",
   "dependencies": {
     "base-58": "0.0.1",
     "bindingify": "^1.0.1",
