@@ -1,6 +1,6 @@
 {
   "name": "factomjs-util",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "a collection of utility functions for Factom",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,8 @@
     "test": "npm run test:node",
     "test:browser": "karma start karma.conf.js",
     "test:node": "istanbul test mocha -- --reporter spec",
-    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md && contributor",
+    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md",
+    "build:contributor": "contributor",
     "build:no-dist": "browserify index.js -o dist/factomjs-util.js --debug -t [ babelify --presets [ es2015 react ] ]",
     "build:dist": "browserify -r ./index.js:factomjs-util -s Util -t [ babelify --presets [ es2015 react ] ] > dist/factomjs-util.js"
   },
@@ -42,9 +43,9 @@
       "name": "Steven Masley",
       "email": null,
       "url": "https://github.com/Emyrk",
-      "contributions": 21,
-      "additions": 55020,
-      "deletions": 43462,
+      "contributions": 22,
+      "additions": 97449,
+      "deletions": 43524,
       "hireable": null
     }
   ],
