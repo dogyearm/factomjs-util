@@ -598,6 +598,10 @@ Address.prototype.isFactoid = function () {
   return this.IsFactoid
 }
 
+Address.prototype.getHumanReadable = function () {
+  return this.HumanReadable
+}
+
 Address.prototype.MarshalBinary = function () {
   return Buffer.concat([intToBuffer(this.Amount), this.RCDHash])
 }
