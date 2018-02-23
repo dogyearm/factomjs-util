@@ -173,11 +173,8 @@ function keyToAddress (pubKey, prefix, isRCD) {
       address = Buffer.concat([exports.FACTOID_PRIVATE_PREFIX, pubKey])
       break
     case 'EC':
-      if (isRCD) {
-        address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, pubKey])
-      } else {
-        address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, keyToRCD1(pubKey)])
-      }
+      // EC does not use RCD
+      address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, pubKey])
       break
     case 'Es':
       address = Buffer.concat([exports.ENTRYCREDIT_PRIVATE_PREFIX, pubKey])
