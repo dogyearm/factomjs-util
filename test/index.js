@@ -163,6 +163,17 @@ describe('publicToAddress', function () {
     var r = fctUtils.publicFactoidKeyToHumanAddress(pubKey)
     assert.equal(r.toString('hex'), address)
   })
+    it('should produce an address given a SEC1 public key', function () {
+    var pubKey = '4a1704c7bde0710953c18db8d4f7c900026eac040ea52b660880aee9a2d9faa1'
+    var address = 'EC2KnJQN86MYq4pQyeSGTHSiVdkhRCPXS3udzD4im6BXRBjZFMmR'
+    // Es37BZSs7jUpyn3HosZa79kENWfvj1AVUdZioWykTTqqvA2MRi9h
+    // EC2KnJQN86MYq4pQyeSGTHSiVdkhRCPXS3udzD4im6BXRBjZFMmR
+    // Sec 59bf006983f72f226d073bac578cef91f3947fc2e213568b852baf0d107831a2
+    // Pub 4a1704c7bde0710953c18db8d4f7c900026eac040ea52b660880aee9a2d9faa1
+    pubKey = Buffer.from(pubKey, 'hex')
+    var r = fctUtils.publicECKeyToHumanAddress(pubKey)
+    assert.equal(r.toString('hex'), address)
+  })
   it('shouldn\'t produce an address given an invalid ed25519 public key', function () {
     var pubKey = ''
     pubKey = Buffer.from(pubKey, 'hex')

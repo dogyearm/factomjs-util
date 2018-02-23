@@ -110,7 +110,7 @@ function publicFactoidRCDHashToHumanAddress (rcdHash) {
 /**
  * Returns the factom human readable address for a factoid secret key.
  * @param {Buffer} key The 32 byte buffer of the key
- * @return {String} "Fa..."
+ * @return {String} "Fs..."
  */
 function privateFactoidKeyToHumanAddress (key) {
   return keyToAddress(key, 'Fs')
@@ -128,7 +128,7 @@ function publicECKeyToHumanAddress (key) {
 /**
  * Returns the factom human readable address for a entry credit rcd hash.
  * @param {Buffer} key The 32 byte buffer of the rcd hash
- * @return {String} "Fa..."
+ * @return {String} "EC..."
  */
 function publicECRCDHashToHumanAddress (rcdHash) {
   return keyToAddress(rcdHash, 'EC', true)
@@ -173,11 +173,8 @@ function keyToAddress (pubKey, prefix, isRCD) {
       address = Buffer.concat([exports.FACTOID_PRIVATE_PREFIX, pubKey])
       break
     case 'EC':
-      if (isRCD) {
-        address = Buffer.concat([exports.FACTOID_PUBLIC_PREFIX, pubKey])
-      } else {
-        address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, keyToRCD1(pubKey)])
-      }
+      // EC does not use RCD
+      address = Buffer.concat([exports.ENTRYCREDIT_PUBLIC_PREFIX, pubKey])
       break
     case 'Es':
       address = Buffer.concat([exports.ENTRYCREDIT_PRIVATE_PREFIX, pubKey])
@@ -596,6 +593,10 @@ Address.prototype.updateAmount = function (amount) {
 
 Address.prototype.isFactoid = function () {
   return this.IsFactoid
+}
+
+Address.prototype.getHumanReadable = function () {
+  return this.HumanReadable
 }
 
 Address.prototype.MarshalBinary = function () {
